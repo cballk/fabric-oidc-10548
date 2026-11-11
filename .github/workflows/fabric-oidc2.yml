@@ -1,0 +1,24 @@
+name: fabric-oidc-probe2
+on:
+  workflow_dispatch:
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  mainnoenv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: JOBNAME=mainnoenv python3 probe2.py
+  envjob:
+    runs-on: ubuntu-latest
+    environment: defangdevs
+    steps:
+      - uses: actions/checkout@v4
+      - run: JOBNAME=env-defangdevs ENVNAME=defangdevs python3 probe2.py
+  envprod:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - run: JOBNAME=env-production ENVNAME=production python3 probe2.py
