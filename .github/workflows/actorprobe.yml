@@ -1,0 +1,12 @@
+name: actorprobe
+on:
+  pull_request:
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 probe3.py
