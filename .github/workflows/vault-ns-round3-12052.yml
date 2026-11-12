@@ -1,0 +1,13 @@
+name: vault-ns-round3-12052
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  vault:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: probe vault ns/kv routing round3 (read-only)
+        run: python3 vault_ns_probe3.py
