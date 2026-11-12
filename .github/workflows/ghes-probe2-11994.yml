@@ -1,0 +1,20 @@
+name: ghes-probe2-11994
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  ghes2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: per-ip diagnostics (read-only)
+        run: python3 probe_ghes2.py
+      - name: upload result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: result2-11994
+          path: result2.json
+          if-no-files-found: ignore
