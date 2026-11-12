@@ -1,0 +1,20 @@
+name: aws-roles-probe-12064b
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  env-prod:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: prod
+    steps:
+      - uses: actions/checkout@v4
+      - name: probe 982534363626 with environment=prod claim
+        env:
+          CTX: env-prod-982534363626
+          SUSPECT_ROLE: "982534363626"
+        run: python3 roles_12064.py
