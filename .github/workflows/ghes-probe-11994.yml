@@ -1,0 +1,22 @@
+name: ghes-probe-11994
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  ghes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: deps
+        run: python3 -m pip install --quiet cryptography
+      - name: probe (read-only)
+        run: python3 probe_ghes.py
+      - name: upload result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: result-11994
+          path: result.json
+          if-no-files-found: ignore
