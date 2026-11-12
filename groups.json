@@ -282,5 +282,8 @@
   "sonarlint-atom",
   "sq-com_example_java-gradle-travis",
   "vsts-tasks"
+ ],
+ "X": [
+  "sonar-iac"
  ]
 }
