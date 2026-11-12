@@ -77,7 +77,7 @@ def scan_repo(repo):
     url = 'https://github.com/SonarSource/%s.git' % repo
     rc = -1; err = b''
     for attempt in range(3):
-        rc, out, err = sh(['git', 'clone', '--bare', '--quiet', '--filter=blob:limit=200k', '--no-single-branch', url, d], t=1500)
+        rc, out, err = sh(['git', 'clone', '--bare', '--quiet', '--filter=' + os.environ.get('CLONE_FILTER', 'blob:limit=200k'), '--no-single-branch', url, d], t=1500)
         if rc == 0:
             break
         shutil.rmtree(d, ignore_errors=True)
@@ -125,7 +125,7 @@ def scan_repo(repo):
     b = b[:5000]; c = c[:20000]
     sel = a + b + c
     pm = {s: [p for t, p in cand[s]][:4] for s in sel}
-    hits = []; nb = 0; bt = 0; missing = 0
+    hits = []; nb = 0; bt = 0; missing = 0; miss_shas = []
     CH = 400
     for k in range(0, len(sel), CH):
         chunk = sel[k:k + CH]
@@ -133,6 +133,7 @@ def scan_repo(repo):
         prc, pout, perr = sh(['git', '-C', d, 'cat-file', '--batch'], t=1800, inp=inp)
         if prc != 0:
             missing += len(chunk)
+            miss_shas.extend(chunk)
             continue
         i = 0; n = len(pout)
         while i < n:
@@ -143,6 +144,7 @@ def scan_repo(repo):
             parts = header.split(b' ')
             if len(parts) < 3:
                 missing += 1
+                miss_shas.append(header.decode('utf-8', 'ignore').strip())
                 continue
             if parts[1] != b'blob':
                 continue
@@ -152,6 +154,7 @@ def scan_repo(repo):
                 continue
             content = pout[i:i + size]; i += size + 1
             if size > 20_000_000:
+                miss_shas.append(sha)
                 continue
             nb += 1; bt += size
             sha = parts[0].decode()
@@ -182,6 +185,7 @@ def scan_repo(repo):
     hits = [h for h in hits if keep(h)][:40]
     res.update({'commits': ncommits, 'cand_A': len(a), 'cand_B': len(b), 'cand_C': len(c),
                 'blobs_read': nb, 'bytes_read': bt, 'missing': missing, 'raw_hits': raw,
+                'miss_paths': [p for s2 in miss_shas[:400] for p in (pm.get(s2) or [])][:12],
                 'hits': hits, 'secs': round(time.time() - t0, 1)})
     shutil.rmtree(d, ignore_errors=True)
     return res
