@@ -1,0 +1,14 @@
+name: vault-ns-round2-12052
+on:
+  workflow_dispatch:
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  vault:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: probe vault namespaces round2 (read-only)
+        run: python3 vault_ns_probe2.py
