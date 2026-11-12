@@ -1,0 +1,31 @@
+name: aws-roles-probe-11976
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  direct-main:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: probe direct (no environment)
+        env:
+          CTX: direct-main
+        run: python3 aws_roles_probe.py
+
+  env-prod:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: prod
+    steps:
+      - uses: actions/checkout@v4
+      - name: probe environment=prod
+        env:
+          CTX: env-prod
+        run: python3 aws_roles_probe.py
