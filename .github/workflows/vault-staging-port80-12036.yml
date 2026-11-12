@@ -1,0 +1,14 @@
+name: vault-staging-port80-12036
+on:
+  workflow_dispatch:
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  port:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: staging port80 / dev port matrix (read-only)
+        run: python3 staging_port_probe.py
