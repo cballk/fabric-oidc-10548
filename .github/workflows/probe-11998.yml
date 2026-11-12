@@ -1,0 +1,14 @@
+name: probe-11998-vaultiac
+on:
+  workflow_dispatch:
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: audience control probe (read-only)
+        run: python3 i11998/probe11998.py
