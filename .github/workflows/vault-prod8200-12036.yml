@@ -1,0 +1,13 @@
+name: vault-prod8200-12036
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  p8200:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: prod 8200 read-only characterization
+        run: python3 prod8200_probe.py
