@@ -1,0 +1,18 @@
+name: vault-family-diff-11983
+on:
+  workflow_dispatch:
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  vaultfam:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: show runner
+        run: |
+          echo "runner=${RUNNER_NAME} os=${RUNNER_OS} arch=${RUNNER_ARCH}"
+          python3 -V
+      - name: probe vault family (read-only)
+        run: python3 vault_family_probe.py
