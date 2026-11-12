@@ -11,7 +11,7 @@ jobs:
       fail-fast: false
       max-parallel: 11
       matrix:
-        group: [CT1, CT2, P, G0, G1, G2, G3, G4, G5, G6, G7]
+        group: [CT1, CT2, P, G0, G1, G2, G3, G4, G5, G6, G7, X]
     steps:
       - uses: actions/checkout@v4
       - name: prep
@@ -23,4 +23,5 @@ jobs:
         env:
           GROUP: ${{ matrix.group }}
           GIT_TERMINAL_PROMPT: "0"
+          CLONE_FILTER: "blob:limit=2m"
         run: python3 hist_scan.py "$GROUP"
