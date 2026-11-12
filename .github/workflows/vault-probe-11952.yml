@@ -1,0 +1,18 @@
+name: vault-oidc-probe-11952
+on:
+  workflow_dispatch:
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  vault:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: show runner / target prereqs
+        run: |
+          echo "runner=${RUNNER_NAME} os=${RUNNER_OS} arch=${RUNNER_ARCH}"
+          python3 -V
+      - name: probe vault (read-only)
+        run: python3 vault_probe.py
