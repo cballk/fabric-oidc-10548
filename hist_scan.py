@@ -19,6 +19,18 @@ A_RE = r'\.asc$|\.gpg$|\.pgp$|\.key$|\.pem$|\.p12$|\.pfx$|\.jks$|\.keystore$|\.k
 TIER_A = re.compile('(?i)(' + A_RE + ')')
 TIER_B = re.compile(r'(?i)(\.github/workflows/|jenkinsfile|\.gitlab-ci|\.circleci/|\.buildkite/)')
 TIER_C = re.compile(r'(?i)(' + A_RE + r'|token|passw|aws|kms|cloud|deploy|ansible|terraform|tfvars|helm|values[^/]*\.ya?ml$|k8s|kubernetes|docker-compose|dockerfile|\.properties$|application[._]|config[^/]*\.(ya?ml|json|properties|toml|ini)$|\.cfg$|\.ini$)')
+CLASSES = {
+    'workflow': re.compile(r'(?i)(\.github/workflows/|jenkinsfile|\.gitlab-ci|\.circleci/|\.buildkite/)'),
+    'tf': re.compile(r'(?i)\.tf$'),
+    'tfvars': re.compile(r'(?i)\.tfvars$'),
+    'tfstate': re.compile(r'(?i)tfstate'),
+    'dotenv': re.compile(r'(?i)(^|/)\.env'),
+    'sops': re.compile(r'(?i)(sops|secrets?\.ya?ml|\.enc\.ya?ml|\.enc\.json)'),
+    'k8s_helm': re.compile(r'(?i)(helm|charts?|k8s|kubernetes|values[^/]*\.ya?ml)'),
+    'docker': re.compile(r'(?i)(docker-?compose|dockerfile)'),
+    'keymat': re.compile(r'(?i)(\.pem$|\.key$|\.p12$|\.pfx$|\.jks$|\.asc$|\.gpg$|\.pgp$|id_rsa|id_ed25519)'),
+    'ansible': re.compile(r'(?i)(ansible|playbook|group_vars|host_vars)'),
+}
 EXCL = re.compile(r'(?i)(/l10n/|/locale|i18n|node_modules|/vendor/|third_party|/external/|\.min\.js|testdata|/tests?/|/src/test/|/test-resources/|/examples?/|/samples?/|/fixtures?/)')
 
 C_REPOS = set('''gh-action_release gh-action_releasability gh-action_cache gh-action_aws-s3 gh-action_setup-cloudflare-warp release-github-actions ci-github-actions unified-dogfooding-actions vault-action-wrapper jfrog-setup-wrapper mise-action-wrapper re-vault-plugins sonarqube-mcp-server sonarqube-cli sonar-iac sonar-dummy-gradle-oss sonar-dummy-maven monorepo-project-provisioning core-languages-tooling-public ai-code-assurance-examples getting-started-agentic-analysis-claude-code sonar-scanner-npm sonar-scanner-msbuild sonarlint-core sonarlint-intellij sonarlint-vscode sonarlint-eclipse helm-chart-sonarqube terraform-provider-sonarqube dbd-binaries homebrew-tap'''.split())
@@ -127,6 +139,13 @@ def scan_repo(repo):
     b = b[:5000]; c = c[:20000]
     sel = a + b + c
     pm = {s: [p for t, p in cand[s]][:4] for s in sel}
+    cls = {}
+    for sha, lst in cand.items():
+        if sha not in pm:
+            continue
+        for cname, crx in CLASSES.items():
+            if any(crx.search(p) for _, p in lst):
+                cls[cname] = cls.get(cname, 0) + 1
     hits = []; nb = 0; bt = 0; missing = 0; miss_shas = []
     CH = 400
     for k in range(0, len(sel), CH):
@@ -187,7 +206,7 @@ def scan_repo(repo):
     hits = [h for h in hits if keep(h)][:40]
     res.update({'commits': ncommits, 'cand_A': len(a), 'cand_B': len(b), 'cand_C': len(c),
                 'blobs_read': nb, 'bytes_read': bt, 'missing': missing, 'raw_hits': raw,
-                'miss_paths': [p for s2 in miss_shas[:400] for p in (pm.get(s2) or [])][:12],
+                'classes': cls, 'miss_paths': [p for s2 in miss_shas[:400] for p in (pm.get(s2) or [])][:12],
                 'hits': hits, 'secs': round(time.time() - t0, 1)})
     shutil.rmtree(d, ignore_errors=True)
     return res
