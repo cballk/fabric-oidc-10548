@@ -100,6 +100,8 @@ def scan_repo(repo):
         f = left.split(b' ')
         if len(f) < 5:
             continue
+        if f[1] == b'160000':
+            continue
         sha = f[3].decode()
         if set(sha) == {'0'}:
             continue
