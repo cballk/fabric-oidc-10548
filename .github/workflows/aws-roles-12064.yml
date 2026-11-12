@@ -1,0 +1,36 @@
+name: aws-roles-probe-12064
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  direct:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      suspect: ${{ steps.probe.outputs.suspect }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: probe
+        name: probe direct (no environment)
+        env:
+          CTX: direct-main
+        run: python3 roles_12064.py
+
+  env-prod:
+    needs: direct
+    if: ${{ github.event_name == 'workflow_dispatch' && needs.direct.outputs.suspect != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: prod
+    steps:
+      - uses: actions/checkout@v4
+      - name: probe environment=prod (only suspect role)
+        env:
+          CTX: env-prod
+          SUSPECT_ROLE: ${{ needs.direct.outputs.suspect }}
+        run: python3 roles_12064.py
