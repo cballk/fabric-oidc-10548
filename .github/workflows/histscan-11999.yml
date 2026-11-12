@@ -1,0 +1,26 @@
+name: histscan-11999
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 11
+      matrix:
+        group: [CT1, CT2, P, G0, G1, G2, G3, G4, G5, G6, G7]
+    steps:
+      - uses: actions/checkout@v4
+      - name: prep
+        run: |
+          df -h / | tail -1
+          git --version
+          python3 -V
+      - name: scan group
+        env:
+          GROUP: ${{ matrix.group }}
+          GIT_TERMINAL_PROMPT: "0"
+        run: python3 hist_scan.py "$GROUP"
