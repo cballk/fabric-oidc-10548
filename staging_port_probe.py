@@ -31,11 +31,11 @@ import urllib.request
 # recorded + runner-observed A records
 HOSTS = {
     "vault.staging.sonar.build": ["18.156.79.179", "3.121.195.183", "18.157.125.57", "3.125.135.87"],
-    "vault-public.staging.sonar.build": ["3.125.135.87", "18.157.125.57", "3.121.195.183", "18.156.79.179"],
-    "vault.sonar.build": ["18.198.153.112", "63.184.0.198", "35.156.3.249"],
-    "vault-public.sonar.build": ["18.198.153.112", "63.184.0.198", "35.156.3.249"],
+    "vault-public.staging.sonar.build": ["3.125.135.87", "18.157.125.57"],
+    "vault.dev.sonar.build": ["18.197.139.205"],
+    "vault-public.dev.sonar.build": ["18.197.139.205"],
 }
-PORT_SCHEMES = {80: ["http"], 8200: ["https", "http"], 443: ["https"]}
+PORT_SCHEMES = {80: ["http"], 8200: ["https"], 443: ["https"]}
 RESULT = {"probe": "vault-staging-port80-12036", "tcp": {}, "http": {}, "logins": {}, "kv": {}}
 REDIRECTS = (301, 302, 303, 307, 308)
 
@@ -49,7 +49,7 @@ def mask_val(v):
     return v[:4] + "****" + v[-4:] + f" (len={len(v)})"
 
 
-def tcp(ip, port, tmo=10, tries=3):
+def tcp(ip, port, tmo=6, tries=2):
     out = []
     for _ in range(tries):
         t0 = time.time()
