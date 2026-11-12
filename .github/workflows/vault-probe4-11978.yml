@@ -1,0 +1,14 @@
+name: vault-bound-audiences-11978
+on:
+  workflow_dispatch:
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  vault:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: probe vault audiences/claims (read-only)
+        run: python3 i11978/vault_probe4.py
