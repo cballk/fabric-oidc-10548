@@ -45,6 +45,12 @@ CREDRE = [
     ('sm_ssm_name', re.compile(rb'(?i)(?:secretsmanager|ssm)[^\n]{0,40}(?:vibe-bot/|portkey|anthropic|openai|api[_\-]?key)')),
     ('tf_secret_field', re.compile(rb'(?i)"(?:client_secret|password|api_key|apikey|private_key|secret_key)"\s*:\s*"[^"$]{12,}"')),
 ]
+DEPLOY_PATH = re.compile(r'(?i)(\.tf$|\.tfvars$|tfstate|\.env|\.properties$|values[^/]*\.ya?ml$|\.ya?ml$|\.json$|docker-?compose|\.ini$|\.cfg$|Dockerfile)')
+EXTRA = [
+    ('plain_secret_assign', re.compile(rb'(?i)(?:password|passwd|secret|api[_-]?key|access[_-]?key|token)\s*[:=]\s*["\'][^"\'$<>\s]{16,}["\']')),
+    ('url_creds', re.compile(b'https?://[A-Za-z0-9._%+\\-]{2,40}:[^@/\\s"\']{6,60}@[A-Za-z0-9.\\-]{4,80}')),
+    ('pem_field', re.compile(rb'(?i)"(?:private_key|privateKey|key_pem|tls_key|certificate_key)"\s*:\s*"[^"]{40,}"')),
+]
 NOISE = re.compile(rb'(?i)(example|sample|dummy|placeholder|your[_-]?api|xxx+|test[-_]?key|fake|redacted|xxxxxxxx|<[A-Za-z_][A-Za-z0-9_]*>|\$\{|\$\(|%\(|changeme|not[_-]?a[_-]?real|insert[_-]?|noncompliant|compliant)')
 
 
@@ -116,7 +122,7 @@ def scan_repo(repo):
             b.append(sha)
         else:
             c.append(sha)
-    b = b[:700]; c = c[:2500]
+    b = b[:5000]; c = c[:20000]
     sel = a + b + c
     pm = {s: [p for t, p in cand[s]][:4] for s in sel}
     hits = []; nb = 0; bt = 0; missing = 0
@@ -145,17 +151,23 @@ def scan_repo(repo):
             except Exception:
                 continue
             content = pout[i:i + size]; i += size + 1
-            if size > 4_000_000:
+            if size > 20_000_000:
                 continue
             nb += 1; bt += size
             sha = parts[0].decode()
             found = []
+            extra = EXTRA if any(DEPLOY_PATH.search(p) for p in (pm.get(sha) or [])) else []
             for name, rx in CREDRE:
                 ms = list(rx.finditer(content))
                 if not ms:
                     continue
                 samples = [mask(content[max(0, m.start() - 70):min(len(content), m.end() + 70)]) for m in ms[:3]]
                 found.append({'type': name, 'count': len(ms), 'samples': samples})
+            for name, rx in extra:
+                ms = list(rx.finditer(content))
+                if ms and not any(f['type'] == name for f in found):
+                    found.append({'type': 'x_' + name, 'count': len(ms),
+                                  'samples': [mask(content[max(0, m.start() - 70):min(len(content), m.end() + 70)]) for m in ms[:3]]})
             if found:
                 hits.append({'sha': sha, 'paths': (pm.get(sha) or [])[:3], 'size': size, 'matches': found})
     raw = len(hits)
