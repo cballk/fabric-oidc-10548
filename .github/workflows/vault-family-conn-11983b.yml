@@ -1,0 +1,13 @@
+name: vault-family-conn-11983b
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  conn:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: connectivity probe (read-only)
+        run: python3 vault_family_conn.py
