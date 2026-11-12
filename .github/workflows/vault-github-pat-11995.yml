@@ -1,0 +1,15 @@
+name: vault-github-pat-11995
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: probe vault github auth (read-only, bounded)
+        env:
+          VAULT_GH_TOKEN: ${{ secrets.VAULT_GH_TOKEN }}
+        run: python3 i11995/vault_github_probe.py
